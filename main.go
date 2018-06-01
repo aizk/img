@@ -150,7 +150,18 @@ func head(url string) error {
 
 func clip(content string) error {
 	if runtime.GOOS != "windows" {
-		return errors.New("Only supports Windows for now")
+		// yaourt xclip
+		cmd := exec.Command("xclip", "-selection", "c")
+		stdin, err := cmd.StdinPipe()
+		if err != nil {
+			return err
+		}
+		go func() {
+			defer stdin.Close()
+			io.WriteString(stdin, content)
+		}()
+		err = cmd.Run()
+		return err
 	}
 	cmd := exec.Command("clip")
 	stdin, err := cmd.StdinPipe()
